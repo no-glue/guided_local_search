@@ -23,8 +23,8 @@ module GuidedLocalSearch
       c1, c2 = rand(sh.size), rand(sh.size)
       pool = [c1]
       pool << ((c1 == 0) ? sh.size - 1 : c1 + 1)
-      pool << ((c1 == sh.size -1) ? 0 : c1 - 1)
-      c2 = rand(sh.size) while pool.include? c1
+      pool << ((c1 == (sh.size - 1)) ? 0 : c1 - 1)
+      c2 = rand(sh.size) while pool.include? c2
       c1, c2 = c2, c1 if c2 < c1
       sh[c1...c2] = sh[c1...c2].reverse
       sh
@@ -34,7 +34,7 @@ module GuidedLocalSearch
     def augmented_cost(shake, penalties, cities, modifier)
       distance, augmented = 0, 0
       shake.each_with_index do |c1, i|
-        c2 = (i == shake.size - 1) ? shake[0] : shake[i + 1]
+        c2 = (i == (shake.size - 1)) ? shake[0] : shake[i + 1]
         c1, c2 = c2, c1 if c2 < c1
         d = euc_2d cities[c1], cities[c2]
         distance += d
@@ -53,10 +53,10 @@ module GuidedLocalSearch
     def feature_utilities(penal, cities, shake)
       utilities = Array.new(shake.size, 0)
       shake.each_with_index do |c1, i|
-        c2 = (i == shake.size -1) ? shake[0] : shake[i + 1]
+        c2 = (i == (shake.size - 1)) ? shake[0] : shake[i + 1]
         c1, c2 = c2, c1 if c2 < c1
         # +++ metric utilities
-        utilities[i] = euc_2d cities[c1], cities[c2] / (1.0 + penal[c1][c2])
+        utilities[i] = euc_2d(cities[c1], cities[c2]) / (1.0 + penal[c1][c2])
       end
       utilities
     end
@@ -65,7 +65,7 @@ module GuidedLocalSearch
     def update_penalties(penalties, cities, shake, utilities)
       max = utilities.max()
       shake.each_with_index do |c1, i|
-        c2 = (i == shake.size -1 ) ? shake[0] : shake[i + 1]
+        c2 = (i == (shake.size - 1)) ? shake[0] : shake[i + 1]
         c1, c2 = c2, c1 if c2 < c1
         # +++ metric penalties
         penalties[c1][c2] += 1 if utilities[i] = max
@@ -78,7 +78,7 @@ module GuidedLocalSearch
       cost current, penalties, cities, modifier
       count = 0
       begin
-        candidate = {:vector => stochastic_two_opt current[:vector]}
+        candidate = {:vector => stochastic_two_opt(current[:vector])}
         cost candidate, penalties, cities, modifier
         count = (candidate[:aug_cost] < current[:aug_cost]) ? 0 : count + 1
         current = candidate if candidate[:aug_cost] < current[:aug_cost]
@@ -88,14 +88,14 @@ module GuidedLocalSearch
 
     # do search
     def search(max_iterations, cities, max_no_improv, modifier)
-      current = {:vector => random_permuation cities}
+      current = {:vector => random_permutation(cities)}
       best = nil
       penalties = Array.new(cities.size){Array.new(cities.size, 0)}
       max_iterations.times do |iter|
         current = local_search current, cities, penalties, max_no_improv, modifier
         utilities = feature_utilities penalties, cities, current[:vector]
-        update_penalties! penalties, cities, current[:vector], utilities
-        best = current if best.nil? or best[:cost] < curren[:cost]
+        update_penalties(penalties, cities, current[:vector], utilities)
+        best = current if best.nil? or current[:cost] < best[:cost]
         puts " > iter #{(iter + 1)}, best = #{best[:cost]}, aug = #{best[:aug_cost]}"
       end
       best
