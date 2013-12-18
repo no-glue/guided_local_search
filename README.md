@@ -1,6 +1,6 @@
 # GuidedLocalSearch
 
-TODO: Write a gem description
+Guided local search to solve travelling salesman.
 
 ## Installation
 
@@ -18,7 +18,7 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+For example GuidedLocalSearch::GuidedLocalSeach.new.search(150, [[50, 50],[70, 70]], 20, 70)
 
 ## Contributing
 
