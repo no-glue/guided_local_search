@@ -36,7 +36,7 @@ module GuidedLocalSearch
       shake.each_with_index do |c1, i|
         c2 = (i == shake.size - 1) ? shake[0] : shake[i + 1]
         c1, c2 = c2, c1 if c2 < c1
-        d = euc_2d(cities[c1], cities[c2])
+        d = euc_2d cities[c1], cities[c2]
         distance += d
         augmented += d + (modifier * penalties[c1][c2])
       end
@@ -75,11 +75,11 @@ module GuidedLocalSearch
 
     # do local search
     def local_search(current, cities, penalties, max_no_improv, modifier)
-      cost(current, penalties, cities, modifier)
+      cost current, penalties, cities, modifier
       count = 0
       begin
-        candidate = {:vector => stochastic_two_opt(current[:vector])}
-        cost(candidate, penalties, cities, modifier)
+        candidate = {:vector => stochastic_two_opt current[:vector]}
+        cost candidate, penalties, cities, modifier
         count = (candidate[:aug_cost] < current[:aug_cost]) ? 0 : count + 1
         current = candidate if candidate[:aug_cost] < current[:aug_cost]
       end until count >= max_no_improv
@@ -88,13 +88,13 @@ module GuidedLocalSearch
 
     # do search
     def search(max_iterations, cities, max_no_improv, modifier)
-      current = {:vector => random_permuation(cities)}
+      current = {:vector => random_permuation cities}
       best = nil
       penalties = Array.new(cities.size){Array.new(cities.size, 0)}
       max_iterations.times do |iter|
-        current = local_search(current, cities, penalties, max_no_improv, modifier)
-        utilities = feature_utilities(penalties, cities, current[:vector])
-        update_penalties!(penalties, cities, current[:vector], utilities)
+        current = local_search current, cities, penalties, max_no_improv, modifier
+        utilities = feature_utilities penalties, cities, current[:vector]
+        update_penalties! penalties, cities, current[:vector], utilities
         best = current if best.nil? or best[:cost] < curren[:cost]
         puts " > iter #{(iter + 1)}, best = #{best[:cost]}, aug = #{best[:aug_cost]}"
       end
